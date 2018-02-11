@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  plex:
+    container_name: plex
+    environment:
+      PGID: 978
+      TZ: America/Denver
+      VERSION: latest
+    image: linuxserver/plex
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /storage/plex/config:/config
+      - /storage/tvshows:/data/tvshows
+      - /storage/movies:/data/movies
+      - /storage/home_videos:/data/home_videos
+      - /storage/plex/transcode:/transcode
+
+  unifi:
+    container_name: unifi
+    environment:
+      PGID: 10000
+      PUID: 1000
+    image: linuxserver/unifi
+    ports:
+      - '3478:3478/udp'
+      - '10001:10001/udp'
+      - '8080:8080'
+      - '8081:8081'
+      - '8443:8443'
+      - '8843:8843'
+      - '8880:8880'
+    restart: unless-stopped
+    volumes:
+      - /storage/unifi/config:/config
+
+  unifi-video:
+    container_name: unifi-video
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    environment:
+      TZ: America/Denver
+      PGID: 10000
+      PUID: 1000
+    image: pducharme/unifi-video-controller
+    ports:
+      - '7442:7442'
+      - '7443:7443'
+      - '7445:7445'
+      - '7446:7446'
+      - '7447:7447'
+      - '7080:7080'
+      - '6666:6666'
+    restart: unless-stopped
+    volumes:
+      - /storage/unifi_camera/config:/var/lib/unifi-video
+      - /storage/unifi_camera/videos:/usr/lib/unifi-video/data/videos
+      - /storage/unifi_camera/logs:/var/log/unifi-video
+

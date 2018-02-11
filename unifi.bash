@@ -1,7 +1,9 @@
 # GID is for the unifi user group
 # Add users to that group
 
-docker create \
+docker run \
+  -d \
+  --restart=always \
   --name=unifi \
   -v /storage/unifi/config:/config \
   -e PGID=10000 -e PUID=1000 \
