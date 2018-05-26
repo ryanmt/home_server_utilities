@@ -18,22 +18,22 @@ services:
       - /storage/plex/transcode:/transcode
 
   unifi:
+    image: ryanmt/unifi:unstable
+    restart: unless-stopped
+    hostname: 'unifi'
     container_name: unifi
-    environment:
-      PGID: 10000
-      PUID: 1000
-    image: linuxserver/unifi
+    cap_drop:
+      - ALL
     ports:
       - '3478:3478/udp'
-      - '10001:10001/udp'
+      - '6789:6789'
       - '8080:8080'
-      - '8081:8081'
       - '8443:8443'
       - '8843:8843'
-      - '8880:8880'
-    restart: unless-stopped
+      - '10001:10001/udp'
     volumes:
-      - /storage/unifi/config:/config
+      - /storage/unifi/config:/var/lib/unifi
+      - /storage/unifi/logs:/var/log/unifi
 
   unifi-video:
     container_name: unifi-video
