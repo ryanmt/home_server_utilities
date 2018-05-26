@@ -16,6 +16,17 @@ services:
       - /storage/movies:/data/movies
       - /storage/home_videos:/data/home_videos
       - /storage/plex/transcode:/transcode
+  plex_monitor:
+    container_name: plex_monitor
+    environment:
+      PGID: 978
+      TZ: America/Denver
+    image: tautulli/tautulli
+    ports:
+      - 8181:8181
+    volumes:
+      - /storage/plex/config:/config
+      - /storage/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro
 
   unifi:
     image: ryanmt/unifi:unstable
