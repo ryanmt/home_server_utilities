@@ -24,6 +24,7 @@ services:
     image: tautulli/tautulli
     ports:
       - 8181:8181
+    restart: unless-stopped
     volumes:
       - /storage/plex/config:/config
       - /storage/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro
