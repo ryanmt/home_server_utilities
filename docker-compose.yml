@@ -71,3 +71,19 @@ services:
       - /storage/unifi_camera/videos:/usr/lib/unifi-video/data/videos
       - /storage/unifi_camera/logs:/var/log/unifi-video
 
+  pi-hole:
+    cap_add:
+      - NET_ADMIN
+    environment:
+      ServerIP: 192.168.1.2
+    image: pihole/pihole:latest
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '67:67/udp'
+      - '80:80'
+      - '443:443'
+    restart: unless-stopped
+    volumes:
+      - /storage/pihole/pihole/:/etc/pihole/
+      - /storage/pihole/dnsmasq.d/:/etc/dnsmasq.d/
