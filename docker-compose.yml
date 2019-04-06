@@ -17,27 +17,6 @@ services:
       - /storage/home_videos:/data/home_videos
       - /storage/plex/transcode:/transcode
 
-  plex_monitor:
-    container_name: plex_monitor
-    environment:
-      PGID: 978
-      TZ: America/Denver
-    image: tautulli/tautulli
-    labels:
-      - "traefik.docker.network=web"
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=HostRegexp:tautulli.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
-      - "traefik.backend=plex_monitor"
-      - "traefik.port=8181"
-    networks:
-      - web
-    ports:
-      - 8181:8181
-    restart: unless-stopped
-    volumes:
-      - /storage/plex/config:/config
-      - /storage/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro
-
   unifi:
     cap_add:
       - SYS_ADMIN
