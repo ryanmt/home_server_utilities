@@ -30,22 +30,27 @@ services:
     # image: ryanmt/unifi:unstable
     image: jacobalberty/unifi:stable
     init: true
-    labels:
-      - "traefik.docker.network=web"
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=HostRegexp:unifi.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
-      - "traefik.backend=unifi"
-      - "traefik.port=8080"
+    # labels:
+      # - "traefik.docker.network=web"
+      # - "traefik.enable=true"
+      # - "traefik.frontend.rule=HostRegexp:unifi.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
+      # - "traefik.backend=unifi"
+      # - "traefik.port=8443"
     networks:
       - web
     ports:
-      - '3478:3478/udp'
-      # - '6789:6789'
-      - '8080:8080'
-      - '8443:8443'
-      - '8843:8843'
-      - '10001:10001/udp'
+      - '3478:3478/udp' # STUN
+      - '6789:6789' # Speed test
+      - '8080:8080' # Device/controller communication
+      - '8443:8443' # GUI
+      - '8843:8843' # HTTPS portal redirection
+      - '8880:8880' # HTTP portal redirection
+      - '10001:10001/udp' # AP discovery
     restart: unless-stopped
+    ulimits:
+      nofile:
+        hard: "65536"
+        soft: "65536"
     volumes:
       - /storage/unifi/config:/unifi/data
       - /storage/unifi/logs:/unifi/log
@@ -62,12 +67,12 @@ services:
       PGID: 10000
       PUID: 1000
     image: pducharme/unifi-video-controller
-    labels:
-      - "traefik.docker.network=web"
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=HostRegexp:cameras.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
-      - "traefik.backend=unifi_video"
-      - "traefik.port=7080"
+    # labels:
+      # - "traefik.docker.network=web"
+      # - "traefik.enable=true"
+      # - "traefik.frontend.rule=HostRegexp:cameras.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
+      # - "traefik.backend=unifi_video"
+      # - "traefik.port=7080"
     networks:
       - web
     ports:
@@ -88,74 +93,79 @@ services:
     cap_add:
       - NET_ADMIN
     container_name: pi_hole
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+      - 8.8.8.8
     environment:
       ServerIP: 192.168.1.2
       VIRTUAL_HOST: "pihole.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
       WEBPASSWORD: 942c98b
     image: pihole/pihole:latest
-    labels:
-      - "traefik.backend=pihole"
-      - "traefik.docker.network=web"
-      - "traefik.enable=true"
-      - "traefik.frontend.priority=1"
-      - "traefik.frontend.rule=HostRegexp:pihole.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
-      - "traefik.port=80"
-      - "traefik.protocol=http"
-    networks:
-      - web
-    ports:
-      - '53:53/tcp'
-      - '53:53/udp'
-      - '67:67/udp'
-      - '8081:80'
-      - '9443:443'
+    # labels:
+      # - "traefik.backend=pihole"
+      # - "traefik.docker.network=web"
+      # - "traefik.enable=true"
+      # - "traefik.frontend.priority=1"
+      # - "traefik.frontend.rule=HostRegexp:pihole.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
+      # - "traefik.port=80"
+      # - "traefik.protocol=http"
+    network_mode: host
+    # networks:
+      # - web
+    # ports:
+      # - '53:53/tcp'
+      # - '53:53/udp'
+      # - '67:67/udp'
+      # - '8081:80'
+      # - '9443:443'
     restart: unless-stopped
     volumes:
       - /storage/pihole/pihole/:/etc/pihole/
       - /storage/pihole/dnsmasq.d/:/etc/dnsmasq.d/
 
-  nextcloud:
-    container_name: nextcloud
-    image: nextcloud
-    labels:
-      - "traefik.docker.network=web"
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=HostRegexp:nextcloud.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
-      - "traefik.backend=nextcloud"
-      - "traefik.port=8881"
-    networks:
-      - web
-    ports:
-      - 8881:80
-    restart: unless-stopped
-    volumes:
-      - /storage/nextcloud:/var/www/html
+  # nextcloud:
+    # container_name: nextcloud
+    # image: nextcloud
+    # labels:
+      # - "traefik.docker.network=web"
+      # - "traefik.enable=true"
+      # - "traefik.frontend.rule=HostRegexp:nextcloud.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
+      # - "traefik.backend=nextcloud"
+      # - "traefik.port=8881"
+    # networks:
+      # - web
+    # ports:
+      # - 8881:80
+    # restart: unless-stopped
+    # volumes:
+      # - /storage/nextcloud:/var/www/html
 
-  traefik:
-    container_name: traefik
-    dns:
-      - 8.8.8.8
-      # - 192.168.1.2
-    image: traefik:1.7
-    networks:
-      - web
-    ports:
-      - "80:80"
-      - "443:443"
-    restart: unless-stopped
-    volumes:
-      - /opt/traefik/acme.json:/acme.json
-      - /opt/traefik/traefik.toml:/traefik.toml
-      - /var/run/docker.sock:/var/run/docker.sock
+  # traefik:
+    # container_name: traefik
+    # dns:
+      # - 8.8.8.8
+      # # - 192.168.1.2
+    # image: traefik:1.7
+    # networks:
+      # - web
+    # ports:
+      # - "80:80"
+      # - "443:443"
+    # restart: unless-stopped
+    # volumes:
+      # - /opt/traefik/acme.json:/acme.json
+      # - /opt/traefik/traefik.toml:/traefik.toml
+      # - /var/run/docker.sock:/var/run/docker.sock
 
   whoami:
     image: containous/whoami
     container_name: whoami
-    labels:
-      - "traefik.docker.network=web"
-      - "traefik.enable=true"
-      - "traefik.port=80"
-      - "traefik.frontend.rule=Host:chat.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
+    # labels:
+      # - "traefik.docker.network=web"
+      # - "traefik.enable=true"
+      # - "traefik.port=80"
+      # - "traefik.frontend.rule=Host:chat.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
     networks:
       - web
 
