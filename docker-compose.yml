@@ -168,6 +168,16 @@ services:
       # - "traefik.frontend.rule=Host:chat.29e0822e-d0cc-11e7-8fab-cec278b6b50a.ryanmt.me"
     networks:
       - web
+  home:
+    container_name: home-assistant
+    environment:
+      TZ: America/Denver
+    image: homeassistant/home-assistant:stable
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /storage/home-assistant:/config
+
 
 networks:
   web:
